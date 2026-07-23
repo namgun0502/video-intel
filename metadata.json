@@ -1,0 +1,6 @@
+{
+  "name": "Video Summary & Learning Workspace",
+  "description": "Extract summaries, timestamped chapter topics, interactive Q&A, multi-language translation, and keyword search from video URLs or audio/subtitle files.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
