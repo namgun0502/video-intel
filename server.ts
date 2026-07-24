@@ -19,7 +19,7 @@ app.use(express.json({ limit: '25mb' }));
 function getGeminiAI() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is missing.');
+    throw new Error('GEMINI_API_KEY environment variable is missing. Please add GEMINI_API_KEY in Vercel project Environment Variables.');
   }
   return new GoogleGenAI({
     apiKey,
@@ -34,7 +34,7 @@ function getGeminiAI() {
 // ----------------------------------------------------
 // API 1: /api/analyze - Summarize & Extract Chapters
 // ----------------------------------------------------
-app.post('/api/analyze', upload.single('file'), async (req, res) => {
+app.post(['/api/analyze', '/analyze'], upload.single('file'), async (req, res) => {
   try {
     const ai = getGeminiAI();
     const sourceType = req.body.sourceType || 'text'; // 'url', 'text', 'file'
@@ -287,7 +287,7 @@ Guidelines:
 // ----------------------------------------------------
 // API 2: /api/qa - Grounded Interactive Q&A
 // ----------------------------------------------------
-app.post('/api/qa', async (req, res) => {
+app.post(['/api/qa', '/qa'], async (req, res) => {
   try {
     const ai = getGeminiAI();
     const { videoContext, question, chatHistory } = req.body;
@@ -334,7 +334,7 @@ Be polite, structured, and helpful in Korean unless requested otherwise.`;
 // ----------------------------------------------------
 // API 3: /api/translate - Multi-language Translation
 // ----------------------------------------------------
-app.post('/api/translate', async (req, res) => {
+app.post(['/api/translate', '/translate'], async (req, res) => {
   try {
     const ai = getGeminiAI();
     const { analysisData, targetLangName, targetLangCode } = req.body;
@@ -370,6 +370,15 @@ Translate strings, title, summary, keyPoints, definitions, questions, and explan
     console.error('Error in /api/translate:', err);
     res.status(500).json({ error: 'Failed to translate content.', details: err.message });
   }
+});
+
+// Global Express Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled express error:', err);
+  res.status(500).json({
+    error: '서버 연동 오류가 발생했습니다.',
+    details: err?.message || String(err),
+  });
 });
 
 // ----------------------------------------------------
