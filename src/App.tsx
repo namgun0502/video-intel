@@ -67,9 +67,19 @@ export default function App() {
         body: formData,
       });
 
-      const resData = await response.json();
+      const responseText = await response.text();
+      let resData: any = {};
 
-      if (resData.success && resData.analysis) {
+      try {
+        resData = JSON.parse(responseText);
+      } catch (parseErr) {
+        if (responseText.startsWith('<') || responseText.includes('The page') || responseText.includes('Vercel')) {
+          throw new Error('API 서버 연결 오류: Vercel 환경 변수 GEMINI_API_KEY가 등록되어 있는지 또는 vercel.json API 라우트 설정을 확인해주세요.');
+        }
+        throw new Error(`서버 응답 오류: ${responseText.slice(0, 100)}`);
+      }
+
+      if (response.ok && resData.success && resData.analysis) {
         setAnalysis(resData.analysis);
         setCurrentTimeSeconds(0);
         setActiveTab('summary');
@@ -112,7 +122,15 @@ export default function App() {
         }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error('Non-JSON translate response:', responseText);
+        return;
+      }
+
       if (data.success && data.translatedAnalysis) {
         setAnalysis((prev) => (prev ? { ...prev, ...data.translatedAnalysis, language: targetLangCode } : prev));
       }

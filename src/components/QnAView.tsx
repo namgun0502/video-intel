@@ -45,8 +45,15 @@ export const QnAView: React.FC<QnAViewProps> = ({ analysis, onJumpToTime }) => {
         }),
       });
 
-      const data = await response.json();
-      if (data.success && data.answer) {
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('API 응답 형식 오류');
+      }
+
+      if (response.ok && data.success && data.answer) {
         const aiMsg: QAMessage = {
           id: 'ai-' + Date.now(),
           sender: 'ai',
